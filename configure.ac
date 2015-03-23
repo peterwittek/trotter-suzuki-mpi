@@ -80,7 +80,7 @@ AM_CONDITIONAL([HAVE_CUDA], [test x"$cuda_enabled" = x"yes"])
 #Setup MPI Paths
 # ------------------------------------------------------------------------------
 AC_ARG_WITH([mpi],
-   [  --with-mpi=PATH    prefix where MPI is installed])
+   [  --with-mpi=PATH    prefix where MPI is installed],[],[with_mpi=${PATH}])
 
 mpi_enabled=no
 if test x"$with_mpi" != x"no" ; then
