@@ -186,7 +186,7 @@ void process_command_line(int argc, char** argv, int *dim, double *delta_x, doub
 int main(int argc, char** argv) {
     int dim = 0, iterations = 0, snapshots = 0;
     string kernel_type = KERNEL_TYPE;
-    int periods[2] = {1, 1};
+    int periods[2] = {0, 0};
     double particle_mass = 1.;
     char filename[FILENAME_LENGTH] = "";
     char pot_name[FILENAME_LENGTH] = "";
@@ -195,9 +195,9 @@ int main(int argc, char** argv) {
     double norm = 1;
     int time, tot_time = 0;
     char output_folder[2] = {'.', '\0'};
-	  double delta_t = 0;
-	  double coupling_const = 0;
-	  double delta_x = 1, delta_y = 1;
+	double delta_t = 0;
+	double coupling_const = 0;
+	double delta_x = 1, delta_y = 1;
 
 #ifdef HAVE_MPI
     MPI_Init(&argc, &argv);
@@ -289,7 +289,7 @@ int main(int argc, char** argv) {
 			struct timeval start, end;
 			gettimeofday(&start, NULL);
 #endif
-			trotter(h_a, h_b, coupling_const, external_pot_real, external_pot_imag, omega, rot_coord_x, rot_coord_y, p_real, p_imag, delta_x, delta_y, matrix_width, matrix_height, delta_t, iterations, kernel_type, periods, norm, imag_time);
+			trotter(h_a, h_b, coupling_const, external_pot_real, external_pot_imag, p_real, p_imag, delta_x, delta_y, matrix_width, matrix_height, delta_t, iterations, omega, rot_coord_x, rot_coord_y, kernel_type, norm, imag_time);
 #ifdef WIN32
 			SYSTEMTIME end;
 			GetSystemTime(&end);

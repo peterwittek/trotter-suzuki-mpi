@@ -246,7 +246,7 @@ int main(int argc, char** argv) {
     for(int count_snap = 0; count_snap < snapshots; count_snap++) {
         
         gettimeofday(&start, NULL);
-        trotter(h_a, h_b, coupling_const, external_pot_real, external_pot_imag, omega, rot_coord_x, rot_coord_y, p_real, p_imag, delta_x, delta_y, matrix_width, matrix_height, delta_t, iterations, kernel_type, periods, norm2, imag_time);
+		trotter(h_a, h_b, coupling_const, external_pot_real, external_pot_imag, p_real, p_imag, delta_x, delta_y, matrix_width, matrix_height, delta_t, iterations, omega, rot_coord_x, rot_coord_y, kernel_type, norm2, imag_time, periods);
 		gettimeofday(&end, NULL);
         time = (end.tv_sec - start.tv_sec) * 1000000 + (end.tv_usec - start.tv_usec);
         tot_time += time;

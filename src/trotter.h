@@ -47,11 +47,10 @@ using namespace std;
 
 void trotter(double h_a, double h_b, double coupling_const,
              double * external_pot_real, double * external_pot_imag,
-             double omega, int rot_coord_x, int rot_coord_y,
              double * p_real, double * p_imag, double delta_x, double delta_y,
              const int matrix_width, const int matrix_height, double delta_t,
-             const int iterations, string kernel_type,
-             int *periods, double norm, bool imag_time);
+             const int iterations, double omega = 0., int rot_coord_x = 0., int rot_coord_y = 0.,
+             string kernel_type = "sse", double norm = 1., bool imag_time = false, int *periods = NULL);             
              
 void solver(double * p_real, double * p_imag,
 			double particle_mass, double coupling_const, double * external_pot, double omega, int rot_coord_x, int rot_coord_y,

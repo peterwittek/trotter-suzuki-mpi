@@ -160,7 +160,7 @@ void solver(double * p_real, double * p_imag,
     
 	
 	//launch kernel
-	trotter(h_a, h_b, coupling_const, external_pot_real, external_pot_imag, omega, rot_coord_x, rot_coord_y, _p_real, _p_imag, delta_x, delta_y, dimx, dimy, delta_t, iterations, kernel_type, periods, norm, imag_time);
+	trotter(h_a, h_b, coupling_const, external_pot_real, external_pot_imag, _p_real, _p_imag, delta_x, delta_y, dimx, dimy, delta_t, iterations, omega, rot_coord_x, rot_coord_y, kernel_type, norm, imag_time, periods);
 	
 	//copy back the final state
 	for(int i = 0; i < matrix_height; i++) {

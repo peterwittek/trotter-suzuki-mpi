@@ -52,7 +52,7 @@ def evolve(p_real, p_imag, particle_mass, external_potential, delta_x, delta_y,
 
 def calculate_total_energy(p_real, p_imag, particle_mass, external_potential, 
                            delta_x, delta_y, coupling_const=0.0, omega=0.0, 
-                           coord_rot_x=0.0, coord_rot_y=0.0):
+                           rot_coord_x=0.0, rot_coord_y=0.0):
     """Function for calculating the expectation value of the Hamiltonian.
 
     :param p_real: The real part of the quantum state.
@@ -100,7 +100,7 @@ def calculate_kinetic_energy(p_real, p_imag, particle_mass, delta_x, delta_y):
 
 
 def calculate_rotational_energy(p_real, p_imag, delta_x, delta_y, omega=0.0, 
-                                coord_rot_x=0.0, coord_rot_y=0.0):
+                                rot_coord_x=0.0, rot_coord_y=0.0):
     """Function for calculating rotational energy of a system in a rotating frame of reference. The axis of rotation is parallel to z.
     
     :param p_real: The real part of the quantum state.
@@ -114,15 +114,15 @@ def calculate_rotational_energy(p_real, p_imag, delta_x, delta_y, omega=0.0,
     :param omega: Angular velocity of the frame system.
     :type omega: float.
     :param coord_rot_x: x-coordinate of the rotation axis.
-    :type coord_rot_x: int.
+    :type rot_coord_x: int.
     :param coord_rot_y: y-coordinate of the rotation axis.
-    :type coord_rot_x: int.
+    :type rot_coord_x: int.
     """
     return Lz(p_real, p_imag, omega, coord_rot_x, coord_rot_y, delta_x, delta_y)
 
 
 def calculate_norm2(p_real, p_imag, delta_x, delta_y):
-    """Function for calculating the expectation value of the kinetic energy.
+    """Function for calculating the squared norm of the state.
 
     :param p_real: The real part of the quantum state.
     :type p_real: 2D numpy.array of float64.
