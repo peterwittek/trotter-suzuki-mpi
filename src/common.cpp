@@ -20,6 +20,7 @@
 #include <sstream>
 #include <stdexcept>
 #include "trottersuzuki.h"
+#include "trottersuzuki1D.h"
 
 void my_abort(string err) {
 #ifdef HAVE_MPI
@@ -282,4 +283,177 @@ void stamp_matrix(Lattice *grid, double *matrix, string filename) {
                  grid->global_dim_x - 2 * grid->periods[1]*grid->halo_x, grid->global_dim_y - 2 * grid->periods[0]*grid->halo_y);
 #endif
     return;
+}
+
+void stamp1D(Lattice1D *grid, State1D *state, string fileprefix) {
+#ifdef HAVE_MPI
+	// Set variables for mpi output
+	char *data_as_txt;
+	int count;
+
+	MPI_File   file;
+	MPI_Status status;
+
+	// each number is represented by charspernum chars
+	const int chars_per_complex_num = 30;
+	MPI_Datatype complex_num_as_string;
+	MPI_Type_contiguous(chars_per_complex_num, MPI_CHAR, &complex_num_as_string);
+	MPI_Type_commit(&complex_num_as_string);
+
+	const int charspernum = 14;
+	MPI_Datatype num_as_string;
+	MPI_Type_contiguous(charspernum, MPI_CHAR, &num_as_string);
+	MPI_Type_commit(&num_as_string);
+
+	// create a type describing our piece of the array
+	int globalsizes[1] = { grid->global_dim_x - 2 * grid->periods[0] * grid->halo_x };
+	int localsizes[1] = { grid->inner_end_x - grid->inner_start_x };
+	int starts[1] = { grid->inner_start_x };
+	int order = MPI_ORDER_C;
+
+	MPI_Datatype complex_localarray;
+	MPI_Type_create_subarray(2, globalsizes, localsizes, starts, order, complex_num_as_string, &complex_localarray);
+	MPI_Type_commit(&complex_localarray);
+	MPI_Datatype localarray;
+	MPI_Type_create_subarray(2, globalsizes, localsizes, starts, order, num_as_string, &localarray);
+	MPI_Type_commit(&localarray);
+
+	// output complex matrix
+	// conversion
+	data_as_txt = new char[(grid->inner_end_x - grid->inner_start_x) * chars_per_complex_num];
+	count = 0;
+
+	for (int k = grid->inner_start_x - grid->start_x; k < grid->inner_end_x - grid->start_x - 1; k++) {
+		sprintf(&data_as_txt[count * chars_per_complex_num], "(%+.5e,%+.5e)   ", state->p_real[ k], state->p_imag[ k]);
+		count++;
+	}
+	if (grid->mpi_coords[1] == grid->mpi_dims[1] - 1) {
+		sprintf(&data_as_txt[count * chars_per_complex_num], "(%+.5e,%+.5e)\n  ", state->p_real[ (grid->inner_end_x - grid->start_x) - 1], state->p_imag[ (grid->inner_end_x - grid->start_x) - 1]);
+		count++;
+	}
+	else {
+		sprintf(&data_as_txt[count * chars_per_complex_num], "(%+.5e,%+.5e)   ", state->p_real[ (grid->inner_end_x - grid->start_x) - 1], state->p_imag[ (grid->inner_end_x - grid->start_x) - 1]);
+		count++;
+	}
+
+	// open the file, and set the view
+	stringstream output_filename;
+	output_filename << fileprefix;
+	MPI_File_open(grid->cartcomm, const_cast<char*>(output_filename.str().c_str()),
+		MPI_MODE_CREATE | MPI_MODE_WRONLY,
+		MPI_INFO_NULL, &file);
+
+	MPI_File_set_view(file, 0, MPI_CHAR, complex_localarray, (char *)"native", MPI_INFO_NULL);
+
+	MPI_File_write_all(file, data_as_txt, (grid->inner_end_x - grid->inner_start_x), complex_num_as_string, &status);
+	MPI_File_close(&file);
+	delete[] data_as_txt;
+	/*
+	// output real matrix
+	//conversion
+	data_as_txt = new char[(grid->inner_end_x - grid->inner_start_x) * (grid->inner_end_y - grid->inner_start_y) * charspernum];
+	count = 0;
+	for (int j = grid->inner_start_y - grid->start_y; j < grid->inner_end_y - grid->start_y; j++) {
+	for (int k = grid->inner_start_x - grid->start_x; k < grid->inner_end_x - grid->start_x - 1; k++) {
+	sprintf(&data_as_txt[count * charspernum], "%+.5e  ", state->p_real[j * grid->dim_x + k]);
+	count++;
+	}
+	if(grid->mpi_coords[1] == grid->mpi_dims[1] - 1) {
+	sprintf(&data_as_txt[count * charspernum], "%+.5e\n ", state->p_real[j * grid->dim_x + (grid->inner_end_x - grid->start_x) - 1]);
+	count++;
+	}
+	else {
+	sprintf(&data_as_txt[count * charspernum], "%+.5e  ", state->p_real[j * grid->dim_x + (grid->inner_end_x - grid->start_x) - 1]);
+	count++;
+	}
+	}
+
+	// open the file, and set the view
+	output_filename.str("");
+	output_filename << fileprefix << "-iter-real.dat";
+	MPI_File_open(grid->cartcomm, const_cast<char*>(output_filename.str().c_str()),
+	MPI_MODE_CREATE | MPI_MODE_WRONLY,
+	MPI_INFO_NULL, &file);
+
+	MPI_File_set_view(file, 0,  MPI_CHAR, localarray, (char *)"native", MPI_INFO_NULL);
+
+	MPI_File_write_all(file, data_as_txt, (grid->inner_end_x - grid->inner_start_x) * ( grid->inner_end_y - grid->inner_start_y), num_as_string, &status);
+	MPI_File_close(&file);
+	delete [] data_as_txt;
+	*/
+#else
+	stringstream output_filename;
+	/*
+	output_filename << fileprefix << "-iter-real.dat";
+	print_matrix(output_filename.str().c_str(), &(state->p_real[grid->global_dim_x * (grid->inner_start_y - grid->start_y) + grid->inner_start_x - grid->start_x]), grid->global_dim_x,
+	grid->global_dim_x - 2 * grid->periods[1]*grid->halo_x, grid->global_dim_y - 2 * grid->periods[0]*grid->halo_y);
+	*/
+	output_filename.str("");
+	output_filename << fileprefix;
+	print_complex_matrix(output_filename.str().c_str(), &(state->p_real[grid->global_dim_x + grid->inner_start_x - grid->start_x]), &(state->p_imag[grid->global_dim_x + grid->inner_start_x - grid->start_x]), grid->global_dim_x,
+		grid->global_dim_x - 2 * grid->periods[0] * grid->halo_x,1);
+#endif
+	return;
+}
+
+void stamp_matrix1D(Lattice1D *grid, double *matrix, string filename) {
+
+#ifdef HAVE_MPI
+	// Set variables for mpi output
+	char *data_as_txt;
+	int count;
+
+	MPI_File   file;
+	MPI_Status status;
+
+	// each number is represented by charspernum chars
+	const int charspernum = 14;
+	MPI_Datatype num_as_string;
+	MPI_Type_contiguous(charspernum, MPI_CHAR, &num_as_string);
+	MPI_Type_commit(&num_as_string);
+
+	// create a type describing our piece of the array
+	int globalsizes[1] = { grid->global_dim_x - 2 * grid->periods[0] * grid->halo_x };
+	int localsizes[1] = { grid->inner_end_x - grid->inner_start_x };
+	int starts[1] = { grid->inner_start_x };
+	int order = MPI_ORDER_C;
+
+	MPI_Datatype localarray;
+	MPI_Type_create_subarray(2, globalsizes, localsizes, starts, order, num_as_string, &localarray);
+	MPI_Type_commit(&localarray);
+
+	// output real matrix
+	//conversion
+	data_as_txt = new char[(grid->inner_end_x - grid->inner_start_x) *  charspernum];
+	count = 0;
+
+	for (int k = grid->inner_start_x - grid->start_x; k < grid->inner_end_x - grid->start_x - 1; k++) {
+		sprintf(&data_as_txt[count * charspernum], "%+.5e  ", matrix[ k]);
+		count++;
+	}
+	if (grid->mpi_coords[1] == grid->mpi_dims[1] - 1) {
+		sprintf(&data_as_txt[count * charspernum], "%+.5e\n ", matrix[ (grid->inner_end_x - grid->start_x) - 1]);
+		count++;
+	}
+	else {
+		sprintf(&data_as_txt[count * charspernum], "%+.5e  ", matrix[ (grid->inner_end_x - grid->start_x) - 1]);
+		count++;
+	}
+
+
+	// open the file, and set the view
+	MPI_File_open(grid->cartcomm, const_cast<char*>(filename.c_str()),
+		MPI_MODE_CREATE | MPI_MODE_WRONLY,
+		MPI_INFO_NULL, &file);
+
+	MPI_File_set_view(file, 0, MPI_CHAR, localarray, (char *)"native", MPI_INFO_NULL);
+
+	MPI_File_write_all(file, data_as_txt, (grid->inner_end_x - grid->inner_start_x), num_as_string, &status);
+	MPI_File_close(&file);
+	delete[] data_as_txt;
+#else
+	print_matrix(filename.c_str(), &(matrix[grid->global_dim_x + grid->inner_start_x - grid->start_x]), grid->global_dim_x,
+		grid->global_dim_x - 2 * grid->periods[0] * grid->halo_x,1);
+#endif
+	return;
 }
