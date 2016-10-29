@@ -29,5 +29,4 @@ void stamp_matrix1D(Lattice1D *grid, double *matrix, string filename);
 
 void my_abort(string err);
 void memcpy2D(void * dst, size_t dstride, const void * src, size_t sstride, size_t width, size_t height);
-void memcpy1D(void * dst, size_t dstride, const void * src, size_t sstride, size_t width /*, size_t height*/);
 #endif
