@@ -20,9 +20,9 @@
 #define __COMMON_H
 #include "trottersuzuki.h"
 #include "trottersuzuki1D.h"
-void stamp(Lattice *grid, State *state, string fileprefix);
+void stamp(Lattice2D *grid, State *state, string fileprefix);
 void stamp1D(Lattice1D *grid, State1D *state, string fileprefix);
-void stamp_matrix(Lattice *grid, double *matrix, string filename);
+void stamp_matrix(Lattice2D *grid, double *matrix, string filename);
 void stamp_matrix1D(Lattice1D *grid, double *matrix, string filename);
 void my_abort(string err);
 void memcpy2D(void * dst, size_t dstride, const void * src, size_t sstride, size_t width, size_t height);
