@@ -111,7 +111,7 @@ void memcpy2D(void * dst, size_t dstride, const void * src, size_t sstride, size
     }
 }
 
-void stamp(Lattice *grid, State *state, string fileprefix) {
+void stamp(Lattice2D *grid, State *state, string fileprefix) {
 #ifdef HAVE_MPI
     // Set variables for mpi output
     char *data_as_txt;
@@ -223,7 +223,7 @@ void stamp(Lattice *grid, State *state, string fileprefix) {
     return;
 }
 
-void stamp_matrix(Lattice *grid, double *matrix, string filename) {
+void stamp_matrix(Lattice2D *grid, double *matrix, string filename) {
 
 #ifdef HAVE_MPI
     // Set variables for mpi output
