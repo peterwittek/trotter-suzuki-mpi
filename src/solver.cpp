@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-//#include "pch.h"
+
 #include "trottersuzuki.h"
 #include "common.h"
 #include "kernel.h"
