@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-//#include "pch.h"
+
 #include <fstream>
 #include <iostream>
 #include "trottersuzuki.h"
@@ -415,7 +415,7 @@ void State::calculate_expected_values(void) {
     complex<double> derivate1_1 = 1. / 6., derivate1_2 = - 1., derivate1_3 = 0.5, derivate1_4 = 1. / 3.;
 
 #ifndef HAVE_MPI
-    #pragma omp parallel for reduction(+:sum_norm2,sum_x_mean,sum_y_mean,sum_xx_mean,sum_yy_mean,sum_px_mean,sum_py_mean,sum_pxpx_mean,sum_pypy_mean,sum_angular_momentum) private(x,y) schedule(dynamic, 512)
+    #pragma omp parallel for reduction(+:sum_norm2,sum_x_mean,sum_y_mean,sum_xx_mean,sum_yy_mean,sum_px_mean,sum_py_mean,sum_pxpx_mean,sum_pypy_mean,sum_angular_momentum) private(x,y) schedule(dynamic, 8)
 #endif
     for (int i = ini_halo_y; i < grid->inner_end_y - grid->start_y; ++i) {
         complex<double> psi_up, psi_down, psi_center, psi_left, psi_right;
