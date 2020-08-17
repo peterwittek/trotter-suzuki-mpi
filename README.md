@@ -1,6 +1,8 @@
 Massively Parallel Trotter-Suzuki Solver
 ========================================
 
+This fork has modified OpenMP directives that have optimized the CPU use. The MPI and CUDA parts of the code are not modified. It only applies to the OpenMP parts which have changed. They are now using dynamic scheduling for a more balanced use of threads.
+
 The Trotter-Suzuki approximation leads to an efficient algorithm for simulating quantum systems. This library provides a scalable, high-precision implementation that uses parallel and distributed computational resources. The implementation built on [single-node parallel kernels](https://bitbucket.org/zzzoom/trottersuzuki) [1], extending them to use distributed resources [2], and generalizing the kernels to be able to tackle a wider range of problems in quantum physics [3].
 
 Key features:

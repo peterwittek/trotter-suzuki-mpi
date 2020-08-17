@@ -140,7 +140,7 @@ public:
     ~State();    ///< Destructor.
     void init_state(complex<double> (*ini_state)(double x) /** Pointer to a wave function */); ///< Write the wave function from a C++ function to p_real and p_imag matrices in 1D.
     void init_state(complex<double> (*ini_state)(double x, double y) /** Pointer to a wave function */);    ///< Write the wave function from a C++ function to p_real and p_imag matrices in 2D.
-    void loadtxt(char *file_name);    ///< Load the wave function from a file to p_real and p_imag matrices.
+    void loadtxt(const char *file_name);    ///< Load the wave function from a file to p_real and p_imag matrices.
 
     void imprint(complex<double> (*function)(double x) /** Pointer to a function */);    ///< Multiply the wave function of the state by the function provided in 1D.
     void imprint(complex<double> (*function)(double x, double y) /** Pointer to a function */);    ///< Multiply the wave function of the state by the function provided in 2D.

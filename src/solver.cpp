@@ -15,11 +15,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+//#include "pch.h"
 #include "trottersuzuki.h"
 #include "common.h"
 #include "kernel.h"
 #include <iostream>
 #include <cstring>
+
 
 Solver::Solver(Lattice *_grid, State *_state, Hamiltonian *_hamiltonian,
                double _delta_t, string _kernel_type):
@@ -79,7 +81,7 @@ void Solver::initialize_exp_potential(double delta_t, int which) {
         complex<double> tmp;
         double ptmp;
 #ifndef HAVE_MPI
-        #pragma omp for
+        #pragma omp for schedule(dynamic, 12) collapse(2)
 #endif
         for (int y = 0; y < grid->dim_y; ++y) {
             for (int x = 0; x < grid->dim_x; ++x) {
