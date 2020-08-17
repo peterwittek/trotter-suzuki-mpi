@@ -15,12 +15,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include "trottersuzuki.h"
 #include "common.h"
+
 
 void map_lattice_to_coordinate_space(Lattice *grid, int x_in, double *x_out) {
     if (grid->coordinate_system == "cartesian") {
@@ -183,6 +185,9 @@ void print_matrix(string filename, double * matrix, size_t stride, size_t width,
 void memcpy2D(void * dst, size_t dstride, const void * src, size_t sstride, size_t width, size_t height) {
     char *d = reinterpret_cast<char *>(dst);
     const char *s = reinterpret_cast<const char *>(src);
+//#ifndef HAVE_MPI
+//    #pragma omp parallel for schedule(dynamic, 2) collapse(2)
+//#endif //wasn't worth it.
     for (size_t i = 0; i < height; ++i) {
         for (size_t j = 0; j < width; ++j) {
             d[i * dstride + j] = s[i * sstride + j];

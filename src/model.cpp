@@ -15,11 +15,14 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 #include <fstream>
 #include <iostream>
 #include "trottersuzuki.h"
 #include "common.h"
 #include <math.h>
+#include <cstring>
+
 
 double const_potential(double x) {
     return 0.;
@@ -251,74 +254,83 @@ void State::init_state(complex<double> (*ini_state)(double x, double y)) {
     }
 }
 
-void State::loadtxt(char *file_name) {
+void State::loadtxt(const char *file_name) {
     ifstream input(file_name);
-    int in_width = grid->global_no_halo_dim_x;
-    int in_height = grid->global_no_halo_dim_y;
-    complex<double> tmp;
-    for(int i = 0; i < in_height; i++) {
-        for(int j = 0; j < in_width; j++) {
-            input >> tmp;
+    if (input) {
+        std::cout << "Opened file: " << file_name << " succesfully!\n";
+        int in_width = grid->global_no_halo_dim_x;
+        int in_height = grid->global_no_halo_dim_y;
+        complex<double> tmp;
+        for (int i = 0; i < in_height; i++) {
+            for (int j = 0; j < in_width; j++) {
+                input >> tmp;
 
-            if((i - grid->start_y) >= 0 && (i - grid->start_y) < grid->dim_y && (j - grid->start_x) >= 0 && (j - grid->start_x) < grid->dim_x) {
-                p_real[(i - grid->start_y) * grid->dim_x + j - grid->start_x] = real(tmp);
-                p_imag[(i - grid->start_y) * grid->dim_x + j - grid->start_x] = imag(tmp);
-            }
+                if ((i - grid->start_y) >= 0 && (i - grid->start_y) < grid->dim_y && (j - grid->start_x) >= 0 && (j - grid->start_x) < grid->dim_x) {
+                    p_real[(i - grid->start_y) * grid->dim_x + j - grid->start_x] = real(tmp);
+                    p_imag[(i - grid->start_y) * grid->dim_x + j - grid->start_x] = imag(tmp);
+                }
 
-            //Down band
-            if(i < grid->halo_y && grid->mpi_coords[0] == grid->mpi_dims[0] - 1 && grid->periods[0] != 0) {
-                if((j - grid->start_x) >= 0 && (j - grid->start_x) < grid->dim_x) {
-                    p_real[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j - grid->start_x] = real(tmp);
-                    p_imag[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j - grid->start_x] = imag(tmp);
+                //Down band
+                if (i < grid->halo_y && grid->mpi_coords[0] == grid->mpi_dims[0] - 1 && grid->periods[0] != 0) {
+                    if ((j - grid->start_x) >= 0 && (j - grid->start_x) < grid->dim_x) {
+                        p_real[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j - grid->start_x] = real(tmp);
+                        p_imag[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j - grid->start_x] = imag(tmp);
+                    }
+                    //Down right corner
+                    if (j < grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == grid->mpi_dims[1] - 1) {
+                        p_real[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j + grid->dim_x - grid->halo_x] = real(tmp);
+                        p_imag[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j + grid->dim_x - grid->halo_x] = imag(tmp);
+                    }
+                    //Down left corner
+                    if (j >= in_width - grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == 0) {
+                        p_real[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j - (in_width - grid->halo_x)] = real(tmp);
+                        p_imag[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j - (in_width - grid->halo_x)] = imag(tmp);
+                    }
                 }
-                //Down right corner
-                if(j < grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == grid->mpi_dims[1] - 1) {
-                    p_real[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j + grid->dim_x - grid->halo_x] = real(tmp);
-                    p_imag[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j + grid->dim_x - grid->halo_x] = imag(tmp);
-                }
-                //Down left corner
-                if(j >= in_width - grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == 0) {
-                    p_real[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j - (in_width - grid->halo_x)] = real(tmp);
-                    p_imag[(i + grid->dim_y - grid->halo_y) * grid->dim_x + j - (in_width - grid->halo_x)] = imag(tmp);
-                }
-            }
 
-            //Upper band
-            if(i >= in_height - grid->halo_y && grid->periods[0] != 0 && grid->mpi_coords[0] == 0) {
-                if((j - grid->start_x) >= 0 && (j - grid->start_x) < grid->dim_x) {
-                    p_real[(i - (in_height - grid->halo_y)) * grid->dim_x + j - grid->start_x] = real(tmp);
-                    p_imag[(i - (in_height - grid->halo_y)) * grid->dim_x + j - grid->start_x] = imag(tmp);
+                //Upper band
+                if (i >= in_height - grid->halo_y && grid->periods[0] != 0 && grid->mpi_coords[0] == 0) {
+                    if ((j - grid->start_x) >= 0 && (j - grid->start_x) < grid->dim_x) {
+                        p_real[(i - (in_height - grid->halo_y)) * grid->dim_x + j - grid->start_x] = real(tmp);
+                        p_imag[(i - (in_height - grid->halo_y)) * grid->dim_x + j - grid->start_x] = imag(tmp);
+                    }
+                    //Up right corner
+                    if (j < grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == grid->mpi_dims[1] - 1) {
+                        p_real[(i - (in_height - grid->halo_y)) * grid->dim_x + j + grid->dim_x - grid->halo_x] = real(tmp);
+                        p_imag[(i - (in_height - grid->halo_y)) * grid->dim_x + j + grid->dim_x - grid->halo_x] = imag(tmp);
+                    }
+                    //Up left corner
+                    if (j >= in_width - grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == 0) {
+                        p_real[(i - (in_height - grid->halo_y)) * grid->dim_x + j - (in_width - grid->halo_x)] = real(tmp);
+                        p_imag[(i - (in_height - grid->halo_y)) * grid->dim_x + j - (in_width - grid->halo_x)] = imag(tmp);
+                    }
                 }
-                //Up right corner
-                if(j < grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == grid->mpi_dims[1] - 1) {
-                    p_real[(i - (in_height - grid->halo_y)) * grid->dim_x + j + grid->dim_x - grid->halo_x] = real(tmp);
-                    p_imag[(i - (in_height - grid->halo_y)) * grid->dim_x + j + grid->dim_x - grid->halo_x] = imag(tmp);
-                }
-                //Up left corner
-                if(j >= in_width - grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == 0) {
-                    p_real[(i - (in_height - grid->halo_y)) * grid->dim_x + j - (in_width - grid->halo_x)] = real(tmp);
-                    p_imag[(i - (in_height - grid->halo_y)) * grid->dim_x + j - (in_width - grid->halo_x)] = imag(tmp);
-                }
-            }
 
-            //Right band
-            if(j < grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == grid->mpi_dims[1] - 1) {
-                if((i - grid->start_y) >= 0 && (i - grid->start_y) < grid->dim_y) {
-                    p_real[(i - grid->start_y) * grid->dim_x + j + grid->dim_x - grid->halo_x] = real(tmp);
-                    p_imag[(i - grid->start_y) * grid->dim_x + j + grid->dim_x - grid->halo_x] = imag(tmp);
+                //Right band
+                if (j < grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == grid->mpi_dims[1] - 1) {
+                    if ((i - grid->start_y) >= 0 && (i - grid->start_y) < grid->dim_y) {
+                        p_real[(i - grid->start_y) * grid->dim_x + j + grid->dim_x - grid->halo_x] = real(tmp);
+                        p_imag[(i - grid->start_y) * grid->dim_x + j + grid->dim_x - grid->halo_x] = imag(tmp);
+                    }
                 }
-            }
 
-            //Left band
-            if(j >= in_width - grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == 0) {
-                if((i - grid->start_y) >= 0 && (i - grid->start_y) < grid->dim_y) {
-                    p_real[(i - grid->start_y) * grid->dim_x + j - (in_width - grid->halo_x)] = real(tmp);
-                    p_imag[(i - grid->start_y) * grid->dim_x + j - (in_width - grid->halo_x)] = imag(tmp);
+                //Left band
+                if (j >= in_width - grid->halo_x && grid->periods[1] != 0 && grid->mpi_coords[1] == 0) {
+                    if ((i - grid->start_y) >= 0 && (i - grid->start_y) < grid->dim_y) {
+                        p_real[(i - grid->start_y) * grid->dim_x + j - (in_width - grid->halo_x)] = real(tmp);
+                        p_imag[(i - grid->start_y) * grid->dim_x + j - (in_width - grid->halo_x)] = imag(tmp);
+                    }
                 }
             }
         }
+        input.close();
     }
-    input.close();
+    else {
+        cerr << "File could not be opened!\n"; // Report error
+        cerr << "Error code: " << strerror(errno); // Get some info as to why
+    }
+
+    
 }
 
 double *State::get_particle_density(double *_density) {
@@ -403,7 +415,7 @@ void State::calculate_expected_values(void) {
     complex<double> derivate1_1 = 1. / 6., derivate1_2 = - 1., derivate1_3 = 0.5, derivate1_4 = 1. / 3.;
 
 #ifndef HAVE_MPI
-    #pragma omp parallel for reduction(+:sum_norm2,sum_x_mean,sum_y_mean,sum_xx_mean,sum_yy_mean,sum_px_mean,sum_py_mean,sum_pxpx_mean,sum_pypy_mean,sum_angular_momentum) private(x,y)
+    #pragma omp parallel for reduction(+:sum_norm2,sum_x_mean,sum_y_mean,sum_xx_mean,sum_yy_mean,sum_px_mean,sum_py_mean,sum_pxpx_mean,sum_pypy_mean,sum_angular_momentum) private(x,y) schedule(dynamic, 8)
 #endif
     for (int i = ini_halo_y; i < grid->inner_end_y - grid->start_y; ++i) {
         complex<double> psi_up, psi_down, psi_center, psi_left, psi_right;

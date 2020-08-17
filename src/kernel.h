@@ -13,8 +13,9 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ *_OPENMP
  */
+
 
 #ifndef __KERNEL_H
 #define __KERNEL_H

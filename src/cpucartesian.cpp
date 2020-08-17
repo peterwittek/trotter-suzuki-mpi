@@ -1,5 +1,7 @@
+
 #include <string>
 #include <complex>
+
 
 void block_kernel_vertical(size_t start_offset, size_t stride, size_t width, size_t height, double a, double b, double * p_real, double * p_imag) {
     for (size_t idx = start_offset, peer = idx + stride; idx < width; idx += 2, peer += 2) {

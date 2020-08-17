@@ -15,9 +15,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+
 #include "common.h"
 #include "kernel.h"
 #include <iostream>
+
 
 void full_step(bool two_wavefunctions, size_t stride, size_t width, size_t height,
                double offset_x, double offset_y, double alpha_x, double alpha_y,
@@ -432,7 +434,7 @@ void CPUBlock::run_kernel() {
 #endif
         {
 #ifndef HAVE_MPI
-            #pragma omp for
+            #pragma omp for schedule(dynamic)
 #endif
             for (int block_start = block_height - 2 * halo_y;
             block_start < int(tile_height - block_height);
@@ -477,7 +479,7 @@ void CPUBlock::run_kernel_on_halo() {
         inner = 0;
         sides = 1;
 #ifndef HAVE_MPI
-        #pragma omp parallel for
+        #pragma omp parallel for schedule(dynamic)
 #endif
         for (int block_start = block_height - 2 * halo_y; block_start < tile_height - block_height; block_start += block_height - 2 * halo_y) {
             process_band(two_wavefunctions, start_x - rot_coord_x, start_y - rot_coord_y,
@@ -526,7 +528,7 @@ void CPUBlock::run_kernel_on_halo() {
 double CPUBlock::calculate_squared_norm(bool global) const {
     double norm2 = 0.;
 #ifndef HAVE_MPI
-    #pragma omp parallel for reduction(+:norm2)
+    #pragma omp parallel for reduction(+:norm2) schedule(dynamic, 8)
 #endif
     for(int i = inner_start_y - start_y; i < inner_end_y - start_y; i++) {
         for(int j = inner_start_x - start_x; j < inner_end_x - start_x; j++) {
